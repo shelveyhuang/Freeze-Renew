@@ -270,8 +270,8 @@ test('FreezeHost 自动续期', async () => {
 
             if (remainingDays !== null) {
                 console.log(`⏳ 剩余天数：${remainingDays}`);
-                if (remainingDays > 2) {
-                    const msg = `⏰ 剩余 ${remainingDays} 天，无需续期（需 ≤2 天才续期）`;
+                if (remainingDays > 7) {
+                    const msg = `⏰ 剩余 ${remainingDays} 天，无需续期（需 ≤7 天才续期）`;
                     console.log(msg);
                     await sendTG(msg);
                     // 正常跳过，不报错
@@ -287,10 +287,14 @@ test('FreezeHost 自动续期', async () => {
 
         // ── 点击外链图标打开续期弹窗 ─────────────────────────
         console.log('🔍 查找外链图标按钮...');
-        // 父级可点击元素通常包裹着 <i> 图标，点击父元素更可靠
-        const externalLinkBtn = page.locator('i.fa-external-link-alt').first();
-        await externalLinkBtn.waitFor({ state: 'visible', timeout: 10000 });
-        await externalLinkBtn.click();
+        // 图标在 group-hover 下才可见，需先 hover 父元素使其显现
+        const externalLinkIcon = page.locator('i.fa-external-link-alt').first();
+        const parentEl = page.locator('i.fa-external-link-alt').first().locator('xpath=..');
+        await parentEl.waitFor({ state: 'visible', timeout: 10000 });
+        await parentEl.hover();
+        console.log('✅ 已 hover 父元素，等待图标显现...');
+        await page.waitForTimeout(1000);
+        await externalLinkIcon.click({ force: true });
         console.log('✅ 已点击外链图标，等待弹窗...');
         await page.waitForTimeout(2000);
 
